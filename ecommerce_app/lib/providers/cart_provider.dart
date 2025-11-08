@@ -1,9 +1,9 @@
-import 'dart:async'; 
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-// === 1. CART ITEM MODEL ===
+/// === 1. CART ITEM MODEL ===
 class CartItem {
   final String id;
   final String name;
@@ -17,153 +17,168 @@ class CartItem {
     this.quantity = 1,
   });
 
-  // Gagamitin para i-convert ang CartItem sa Map (para sa Firestore)
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'price': price,
-      'quantity': quantity,
-    };
-  }
+  /// Converts the CartItem to a Firestore-friendly JSON format
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'price': price,
+        'quantity': quantity,
+      };
 
-  // Gagamitin para gumawa ng CartItem galing sa Map (galing sa Firestore)
+  /// Creates a CartItem from Firestore data
   factory CartItem.fromJson(Map<String, dynamic> json) {
-    // Tiyaking tama ang pag-handle ng price (int to double)
     final priceValue = json['price'];
-    final quantityValue = json['quantity'] ?? 1; // Default to 1 if null
-
     return CartItem(
       id: json['id'],
       name: json['name'],
-      price: priceValue is int ? (priceValue).toDouble() : priceValue, 
-      quantity: quantityValue,
+      price: priceValue is int ? priceValue.toDouble() : priceValue ?? 0.0,
+      quantity: json['quantity'] ?? 1,
     );
   }
 }
 
-// ---
-
-// === 2. CART PROVIDER (The Brain) ===
+/// === 2. CART PROVIDER ===
+/// Handles cart logic, syncs with Firestore, and listens for user changes.
 class CartProvider with ChangeNotifier {
-  // Properties para sa local state at Firebase
-  List<CartItem> _items = []; // Hindi na final
-  String? _userId; 
-  StreamSubscription? _authSubscription; 
-
-  // Instances ng Firebase Services
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // CONSTRUCTOR: Nagsisimula ng Authentication Listener
+  List<CartItem> _items = [];
+  String? _userId;
+  StreamSubscription<User?>? _authSubscription;
+
+  /// Constructor sets up an auth listener
   CartProvider() {
-    print('CartProvider initialized: Setting up Auth Listener');
-    _authSubscription = _auth.authStateChanges().listen((User? user) {
-      if (user == null) {
-        // Logged out
-        print('User logged out, clearing local cart.');
-        _userId = null;
-        _items = []; 
-      } else {
-        // Logged in
-        print('User logged in: ${user.uid}. Starting cart fetch...');
-        _userId = user.uid;
-        _fetchCart(); 
-      }
-      notifyListeners();
-    });
+    debugPrint('🛒 CartProvider initialized. Setting up auth listener...');
+    _authSubscription = _auth.authStateChanges().listen(_onAuthStateChanged);
   }
 
-  // === GETTERS ===
-  List<CartItem> get items => _items;
+  // === 3. GETTERS ===
+  List<CartItem> get items => List.unmodifiable(_items);
 
-  int get itemCount {
-    int total = 0;
-    for (var item in _items) {
-      total += item.quantity;
+  int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
+
+  double get totalPrice =>
+      _items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+
+  // === 4. AUTH STATE CHANGE HANDLER ===
+  Future<void> _onAuthStateChanged(User? user) async {
+    if (user == null) {
+      debugPrint('🚪 User logged out → clearing cart.');
+      _userId = null;
+      _items = [];
+    } else {
+      debugPrint('👤 User logged in: ${user.uid}. Fetching cart...');
+      _userId = user.uid;
+      await _fetchCart();
     }
-    return total;
+    notifyListeners();
   }
 
-  double get totalPrice {
-    double total = 0.0;
-    for (var item in _items) {
-      total += (item.price * item.quantity);
-    }
-    return total;
-  }
-  
-  // === FIREBASE HELPER METHODS ===
+  // === 5. FIRESTORE OPERATIONS ===
 
-  // Kukuha ng cart galing sa Firestore
+  /// Fetch the user's saved cart from Firestore
   Future<void> _fetchCart() async {
-    if (_userId == null) return; 
+    if (_userId == null) return;
 
     try {
       final doc = await _firestore.collection('userCarts').doc(_userId).get();
-      
-      if (doc.exists && doc.data()!['cartItems'] != null) {
+
+      if (doc.exists && doc.data()?['cartItems'] != null) {
         final List<dynamic> cartData = doc.data()!['cartItems'];
-        
-        // Convert List<Map> to List<CartItem>
-        _items = cartData.map((item) => CartItem.fromJson(item as Map<String, dynamic>)).toList();
-        print('Cart fetched successfully: ${_items.length} items');
+        _items =
+            cartData.map((data) => CartItem.fromJson(data)).toList(growable: true);
+        debugPrint('✅ Cart fetched: ${_items.length} items.');
       } else {
         _items = [];
-        print('No saved cart found. Starting with empty list.');
+        debugPrint('🆕 No saved cart found. Starting with empty cart.');
       }
     } catch (e) {
-      print('Error fetching cart: $e');
-      _items = []; 
+      debugPrint('❌ Error fetching cart: $e');
+      _items = [];
     }
-    notifyListeners(); 
+
+    notifyListeners();
   }
 
-  // Ise-save ang local cart sa Firestore
+  /// Save the current cart to Firestore
   Future<void> _saveCart() async {
-    if (_userId == null) return; 
+    if (_userId == null) return;
 
     try {
-      // Convert List<CartItem> to List<Map>
-      final List<Map<String, dynamic>> cartData = 
-          _items.map((item) => item.toJson()).toList();
-      
+      final cartData = _items.map((item) => item.toJson()).toList();
       await _firestore.collection('userCarts').doc(_userId).set({
         'cartItems': cartData,
       });
-      print('Cart saved to Firestore');
+      debugPrint('💾 Cart saved to Firestore.');
     } catch (e) {
-      print('Error saving cart: $e');
+      debugPrint('❌ Error saving cart: $e');
     }
   }
 
-  // === MUTATOR METHODS (Public) ===
+  // === 6. PUBLIC CART METHODS ===
 
   void addItem(String id, String name, double price) {
-    var index = _items.indexWhere((item) => item.id == id);
+    final index = _items.indexWhere((item) => item.id == id);
+
     if (index != -1) {
       _items[index].quantity++;
     } else {
       _items.add(CartItem(id: id, name: name, price: price));
     }
 
-    _saveCart(); // Sync sa Firestore pagkatapos magbago
+    _saveCart();
     notifyListeners();
   }
 
   void removeItem(String id) {
     _items.removeWhere((item) => item.id == id);
-    
-    _saveCart(); // Sync sa Firestore pagkatapos magbago
-    notifyListeners(); 
+    _saveCart();
+    notifyListeners();
   }
 
-  // ... Maaari ka ring magdagdag ng updateQuantity o clearCart methods dito ...
+  // === 7. ORDER METHODS ===
 
-  // === DISPOSE METHOD ===
+  /// Place the order → creates new Firestore document under "orders"
+  Future<void> placeOrder() async {
+    if (_userId == null || _items.isEmpty) {
+      throw Exception('Cannot place order: No user or empty cart.');
+    }
+
+    try {
+      await _firestore.collection('orders').add({
+        'userId': _userId,
+        'amount': totalPrice,
+        'dateTime': Timestamp.now(),
+        'items': _items.map((i) => i.toJson()).toList(),
+      });
+
+      debugPrint('✅ Order placed successfully.');
+    } catch (e) {
+      debugPrint('❌ Failed to place order: $e');
+      rethrow; // Allow UI to handle the error
+    }
+  }
+
+  /// Clears both local and Firestore cart
+  Future<void> clearCart() async {
+    if (_userId == null) return;
+
+    _items.clear();
+    notifyListeners();
+
+    try {
+      await _firestore.collection('userCarts').doc(_userId).delete();
+      debugPrint('🧹 Cart cleared from Firestore.');
+    } catch (e) {
+      debugPrint('⚠️ Error clearing cart from Firestore: $e');
+    }
+  }
+
+  // === 8. CLEANUP ===
   @override
   void dispose() {
-    _authSubscription?.cancel(); // Kinakailangan para iwasan ang memory leak
+    _authSubscription?.cancel();
     super.dispose();
   }
 }
