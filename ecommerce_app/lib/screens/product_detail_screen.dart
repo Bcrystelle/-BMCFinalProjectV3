@@ -106,7 +106,7 @@ class ProductDetailScreen extends StatelessWidget {
                   ElevatedButton.icon(
                     onPressed: () {
                       // We will add logic here in Module 8
-                      print('Product ID to add: $productId');
+                      debugPrint('Product ID to add: $productId'); // ✅ FIX: Changed 'print' to 'debugPrint'
                       cart.addItem(productId, name, price);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(

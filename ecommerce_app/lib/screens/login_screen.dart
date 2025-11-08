@@ -36,10 +36,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // ✅ AuthWrapper will automatically navigate to HomeScreen
     } on FirebaseAuthException catch (e) {
+      
+      // ⚠️ FIX: Check mounted state before using context (ScaffoldMessenger)
+      if (!mounted) return;
+
       String message = 'An error occurred.';
 
       // 👇 Debug info in your VS Code console
-      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}');
+      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}'); // ✅ FIX: Print changed to debugPrint
 
       // ✅ Handle common Firebase errors
       switch (e.code) {
@@ -69,8 +73,12 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     } catch (e) {
+      
+      // ⚠️ FIX: Check mounted state before using context (ScaffoldMessenger)
+      if (!mounted) return;
+      
       // Catch any unexpected errors
-      debugPrint('Unexpected error during login: $e');
+      debugPrint('Unexpected error during login: $e'); // ✅ FIX: Print changed to debugPrint
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Something went wrong. Please try again.'),
@@ -78,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } finally {
+      // This is correct: setState is inside an 'if (mounted)' check
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -142,8 +151,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      )
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
                     : const Text('Login'),
               ),
               const SizedBox(height: 12),
