@@ -62,7 +62,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # ✅ Corrected asset path based on your folder (assets/image/)
+  #  Corrected asset path based on your folder (assets/image/)
   assets:
     - assets/image/logo.png
 

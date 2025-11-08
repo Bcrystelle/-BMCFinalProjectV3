@@ -7,8 +7,7 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Get the cart. This time, we *want* to listen (default)
-    //    so this screen rebuilds when we remove an item.
+    
     final cart = Provider.of<CartProvider>(context);
 
     return Scaffold(
@@ -17,19 +16,19 @@ class CartScreen extends StatelessWidget {
       ),
       body: Column(
         children: [
-          // 2. The list of items
+          
           Expanded(
-            // 3. If cart is empty, show a message
+            
             child: cart.items.isEmpty
                 ? const Center(child: Text('Your cart is empty.'))
                 : ListView.builder(
                     itemCount: cart.items.length,
                     itemBuilder: (context, index) {
                       final cartItem = cart.items[index];
-                      // 4. A ListTile to show item details
+                      
                       return ListTile(
                         leading: CircleAvatar(
-                          // Show a mini-image (or first letter)
+                          
                           child: Text(cartItem.name[0]),
                         ),
                         title: Text(cartItem.name),
@@ -37,15 +36,15 @@ class CartScreen extends StatelessWidget {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // 5. Total for this item
+                            
                             Text(
                               '₱${(cartItem.price * cartItem.quantity).toStringAsFixed(2)}',
                             ),
-                            // 6. Remove button
+                            
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
-                                // 7. Call the removeItem function
+                                
                                 cart.removeItem(cartItem.id);
                               },
                             ),

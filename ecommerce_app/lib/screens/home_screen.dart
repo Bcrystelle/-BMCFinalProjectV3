@@ -28,13 +28,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchUserRole() async {
     if (_currentUser == null) return;
 
+    // Safety check para sa async operations, although not strictly needed here
+    // since we're not using context, it's a good habit.
+    // Pero gagamitin natin ito sa mga functions na gumagamit ng setState.
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(_currentUser!.uid)
+          .doc(_currentUser.uid) // ✅ Inalis ang '!' (Null Assertion Fixed)
           .get();
 
       if (doc.exists && doc.data() != null) {
+        // Checking if the widget is still mounted before calling setState
+        if (!mounted) return; // ⚠️ Added check for async state changes
         setState(() {
           _userRole = doc.data()!['role'] ?? 'user';
         });
@@ -57,7 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _currentUser != null ? 'Welcome, ${_currentUser!.email}' : 'Home',
+          // ✅ Inalis ang '!' sa _currentUser.email (Null Assertion Fixed)
+          _currentUser != null ? 'Welcome, ${_currentUser.email}' : 'Home',
         ),
         actions: [
           // 🛒 Cart icon with badge

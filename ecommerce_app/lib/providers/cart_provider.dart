@@ -44,7 +44,6 @@ var index = _items.indexWhere((item) => item.id == id);
 
   void removeItem(String id) {
     _items.removeWhere((item) => item.id == id);
-    notifyListeners(); // Tell widgets to rebuild
+    notifyListeners(); 
   }
 }
-
