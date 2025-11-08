@@ -28,13 +28,16 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchUserRole() async {
     if (_currentUser == null) return;
 
+    
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(_currentUser!.uid)
+          .doc(_currentUser.uid) 
           .get();
 
       if (doc.exists && doc.data() != null) {
+        
+        if (!mounted) return; 
         setState(() {
           _userRole = doc.data()!['role'] ?? 'user';
         });
@@ -57,10 +60,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          _currentUser != null ? 'Welcome, ${_currentUser!.email}' : 'Home',
+          
+          _currentUser != null ? 'Welcome, ${_currentUser.email}' : 'Home',
         ),
         actions: [
-          // 🛒 Cart icon with badge
+          
           Consumer<CartProvider>(
             builder: (context, cart, child) {
               return Badge(
@@ -80,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
-          // ⚙️ Admin button (if user is admin)
+         
           if (_userRole == 'admin')
             IconButton(
               icon: const Icon(Icons.admin_panel_settings),
@@ -94,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-          // 🚪 Logout button
+          
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
@@ -103,31 +107,31 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // 🧱 Body section — product list
+      
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('products')
             .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          // 🔄 Loading state
+          
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // ❌ Error state
+          
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          // 🚫 Empty state
+          
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Text('No products found. Add some in the Admin Panel!'),
             );
           }
 
-          // ✅ Data available
+          
           final products = snapshot.data!.docs;
 
           return GridView.builder(
