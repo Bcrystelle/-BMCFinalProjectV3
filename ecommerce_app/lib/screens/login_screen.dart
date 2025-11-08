@@ -34,18 +34,18 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // ✅ AuthWrapper will automatically navigate to HomeScreen
+      
     } on FirebaseAuthException catch (e) {
       
-      // ⚠️ FIX: Check mounted state before using context (ScaffoldMessenger)
+      
       if (!mounted) return;
 
       String message = 'An error occurred.';
 
-      // 👇 Debug info in your VS Code console
+      
       debugPrint('FirebaseAuthException: ${e.code} - ${e.message}'); // ✅ FIX: Print changed to debugPrint
 
-      // ✅ Handle common Firebase errors
+      
       switch (e.code) {
         case 'invalid-email':
           message = 'The email address is not valid.';
@@ -74,11 +74,11 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (e) {
       
-      // ⚠️ FIX: Check mounted state before using context (ScaffoldMessenger)
+      
       if (!mounted) return;
       
-      // Catch any unexpected errors
-      debugPrint('Unexpected error during login: $e'); // ✅ FIX: Print changed to debugPrint
+      
+      debugPrint('Unexpected error during login: $e'); 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Something went wrong. Please try again.'),
@@ -86,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } finally {
-      // This is correct: setState is inside an 'if (mounted)' check
+      
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -143,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              // ✅ Login Button
+              
               ElevatedButton(
                 onPressed: _isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
@@ -157,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 12),
 
-              // ✅ Navigation to Signup
+              
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(

@@ -55,7 +55,7 @@ class CartScreen extends StatelessWidget {
                   ),
           ),
           
-          // 8. The Total Price Summary
+          
           Card(
             margin: const EdgeInsets.all(16),
             child: Padding(
@@ -75,7 +75,7 @@ class CartScreen extends StatelessWidget {
               ),
             ),
           ),
-          // We'll add a "Checkout" button here in a future module
+          
           const SizedBox(height: 20),
         ],
       ),
