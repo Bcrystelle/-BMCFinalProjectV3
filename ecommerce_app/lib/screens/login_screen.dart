@@ -34,14 +34,18 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // ✅ AuthWrapper will automatically navigate to HomeScreen
+      
     } on FirebaseAuthException catch (e) {
+      
+      
+      if (!mounted) return;
+
       String message = 'An error occurred.';
 
-      // 👇 Debug info in your VS Code console
-      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}');
+      
+      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}'); // ✅ FIX: Print changed to debugPrint
 
-      // ✅ Handle common Firebase errors
+      
       switch (e.code) {
         case 'invalid-email':
           message = 'The email address is not valid.';
@@ -69,8 +73,12 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     } catch (e) {
-      // Catch any unexpected errors
-      debugPrint('Unexpected error during login: $e');
+      
+      
+      if (!mounted) return;
+      
+      
+      debugPrint('Unexpected error during login: $e'); 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Something went wrong. Please try again.'),
@@ -78,6 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } finally {
+      
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -134,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              // ✅ Login Button
+              
               ElevatedButton(
                 onPressed: _isLoading ? null : _login,
                 style: ElevatedButton.styleFrom(
@@ -142,13 +151,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: _isLoading
                     ? const CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      )
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
                     : const Text('Login'),
               ),
               const SizedBox(height: 12),
 
-              // ✅ Navigation to Signup
+              
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pushReplacement(
