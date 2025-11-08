@@ -1,8 +1,13 @@
 import 'package:ecommerce_app/providers/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ecommerce_app/screens/order_success_screen.dart'; // Import for navigation
 
+// Import ng bagong screen para sa navigation. 
+// Palitan ang path nito kung saan mo talaga inilagay ang OrderSuccessScreen.
+// Para sa kumpletong code, gumawa ako ng simple placeholder sa ibaba.
+// import 'package:ecommerce_app/screens/order_success_screen.dart'; 
+
+// === 1. GAWING STATEFUL WIDGET ANG CARTSCREEN ===
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -11,13 +16,12 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  
-  // State variable for the loading spinner on the button
+  // Ang variable na ito ang magko-control sa loading spinner ng button
   bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
-    // Listen to changes in the cart state
+    // 1. Kukunin ang CartProvider instance
     final cart = Provider.of<CartProvider>(context);
 
     return Scaffold(
@@ -27,6 +31,7 @@ class _CartScreenState extends State<CartScreen> {
       body: Column(
         children: [
           
+          // === CART ITEMS LIST ===
           Expanded(
             child: cart.items.isEmpty
                 ? const Center(child: Text('Your cart is empty.'))
@@ -37,23 +42,33 @@ class _CartScreenState extends State<CartScreen> {
                       
                       return ListTile(
                         leading: CircleAvatar(
-                          child: Text(cartItem.title[0]), 
+                          child: Text(cartItem.name[0]),
                         ),
-                        title: Text(cartItem.title), 
-                        subtitle: Text('Qty: ${cartItem.quantity} | Total: ₱${(cartItem.price * cartItem.quantity).toStringAsFixed(2)}'),
-                        trailing: IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              // Call the removeItem logic
-                              cart.removeItem(cartItem.productId); 
-                            },
-                          ),
+                        title: Text(cartItem.name),
+                        subtitle: Text('Qty: ${cartItem.quantity}'),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '₱${(cartItem.price * cartItem.quantity).toStringAsFixed(2)}',
+                            ),
+                            
+                            // Delete Button
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                // Tumatakbo ang removeItem() at nagse-save sa Firestore
+                                cart.removeItem(cartItem.id);
+                              },
+                            ),
+                          ],
+                        ),
                       );
                     },
                   ),
           ),
           
-          // Total Card
+          // === TOTAL PRICE CARD ===
           Card(
             margin: const EdgeInsets.all(16),
             child: Padding(
@@ -67,49 +82,53 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   Text(
                     '₱${cart.totalPrice.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
           ),
           
-          // Place Order Button (New Logic)
+          // 2. === ADD NEW PLACE ORDER BUTTON ===
           Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 20.0),
+            padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50), 
+                minimumSize: const Size.fromHeight(50), // Wide button
               ),
               
-              // Button is disabled if loading OR if the cart is empty
+              // 3. Disable button kung loading o kung empty ang cart
               onPressed: (_isLoading || cart.items.isEmpty) ? null : () async {
+                // 4. Simulan ang loading spinner
                 setState(() {
-                  _isLoading = true; // Start loading
+                  _isLoading = true;
                 });
 
                 try {
-                  // Get provider without listening
+                  // 5. Kumuha ng provider instance (LISTEN: FALSE!)
+                  // Kailangan itong gawin para sa async functions
                   final cartProvider = Provider.of<CartProvider>(context, listen: false);
                   
-                  // 1. Place the order in Firestore
-                  await cartProvider.placeOrder();
-                  // 2. Clear the cart (local state and Firestore cart document)
-                  await cartProvider.clearCart();
+                  // Tandaan: Dapat mayroon kang 'placeOrder()' at 'clearCart()' 
+                  // methods sa iyong CartProvider para gumana ito!
+
+                  // 6. Tumawag sa order methods
+                  await cartProvider.placeOrder(); // I-save ang order sa Firestore
+                  await cartProvider.clearCart(); // I-clear ang local at Firestore cart
                   
-                  // 3. Navigate to the success screen and clear the navigation stack
+                  // 7. Mag-navigate sa success screen at i-clear ang navigation stack
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const OrderSuccessScreen()),
                     (route) => false,
                   );
 
                 } catch (e) {
-                  // Show error message
+                  // 8. Magpakita ng error kung may naganap na problema
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to place order: ${e.toString()}')),
+                    SnackBar(content: Text('Failed to place order: $e')),
                   );
                 } finally {
-                  // Stop loading, regardless of success or failure
+                  // 9. Itigil ang spinner, kahit may error
                   if (mounted) {
                     setState(() {
                       _isLoading = false;
@@ -118,15 +137,50 @@ class _CartScreenState extends State<CartScreen> {
                 }
               },
               
-              // Button content (Spinner or Text)
+              // 10. Magpakita ng spinner o text
               child: _isLoading 
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     )
-                  : const Text('Place Order', style: TextStyle(fontSize: 18)),
+                  : const Text(
+                      'PLACE ORDER',
+                      style: TextStyle(fontSize: 18),
+                    ),
             ),
           ),
+          const SizedBox(height: 20),
         ],
+      ),
+    );
+  }
+}
+
+// === PLACEHOLDER: ORDER SUCCESS SCREEN ===
+// Kailangan mo ito para gumana ang Navigator.of(context).pushAndRemoveUntil
+class OrderSuccessScreen extends StatelessWidget {
+  const OrderSuccessScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Order Placed!')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green, size: 100),
+            const SizedBox(height: 20),
+            const Text('Your order has been placed successfully!', 
+              style: TextStyle(fontSize: 20)),
+            const SizedBox(height: 40),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              child: const Text('Go back to shopping'),
+            )
+          ],
+        ),
       ),
     );
   }

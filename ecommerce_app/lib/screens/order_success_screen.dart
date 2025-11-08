@@ -1,6 +1,4 @@
-// lib/screens/order_success_screen.dart
-
-import 'package:ecommerce_app/screens/home_screen.dart'; // Assuming you have a home_screen.dart
+import 'package:ecommerce_app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
@@ -11,53 +9,89 @@ class OrderSuccessScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Order Placed!'),
-        // 1. This removes the "back" button from the AppBar
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: false, // Removes the back button
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // 2. A nice success icon
-              const Icon(
-                Icons.check_circle_outline,
-                color: Colors.green,
-                size: 100,
-              ),
-              const SizedBox(height: 20),
-              
-              // 3. Confirmation text
-              const Text(
-                'Thank You!',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Your order has been placed successfully.',
-                style: TextStyle(fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 30),
+      body: const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: _OrderSuccessBody(),
+      ),
+    );
+  }
+}
 
-              // 4. A button to go back to the home screen
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(50),
-                ),
-                onPressed: () {
-                  // 5. Navigate and clear all other screens
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    // 6. This (route) => false removes all screens behind it
-                    (Route<dynamic> route) => false,
-                  );
-                },
-                child: const Text('Continue Shopping'),
-              ),
-            ],
+class _OrderSuccessBody extends StatelessWidget {
+  const _OrderSuccessBody();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ✅ Success Icon
+          const Icon(
+            Icons.check_circle_outline,
+            color: Colors.green,
+            size: 120,
           ),
+          const SizedBox(height: 30),
+
+          // ✅ Title
+          const Text(
+            'Thank You for Your Order!',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 15),
+
+          // ✅ Description
+          const Text(
+            'Your order has been placed successfully and will be processed shortly. '
+            'Check your email for confirmation.',
+            style: TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 50),
+
+          // ✅ Continue Shopping Button
+          _ContinueShoppingButton(),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContinueShoppingButton extends StatelessWidget {
+  const _ContinueShoppingButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        backgroundColor: Colors.blueAccent,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+      onPressed: () {
+        // Navigate to Home and clear the previous screens
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
+        );
+      },
+      child: const Text(
+        'CONTINUE SHOPPING',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );
