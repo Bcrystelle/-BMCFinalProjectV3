@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 
-// --- 1. CART ITEM MODEL ---
+
 class CartItem {
   final String id;
   final String name;
@@ -17,7 +17,7 @@ class CartItem {
     this.quantity = 1,
   });
 
-  // Converts CartItem to a Map for Firestore
+  
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -27,7 +27,7 @@ class CartItem {
     };
   }
 
-  // Creates a CartItem from a Map retrieved from Firestore
+  
   factory CartItem.fromJson(Map<String, dynamic> json) {
     return CartItem(
       id: json['id'] as String,
@@ -38,7 +38,7 @@ class CartItem {
   }
 }
 
-// --- 2. CART PROVIDER ---
+
 class CartProvider with ChangeNotifier {
   List<CartItem> _items = [];
   String? _userId; 
@@ -47,10 +47,10 @@ class CartProvider with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // --- Getters ---
+ 
   List<CartItem> get items => _items;
-  String? get userId => _userId; // Added from first snippet
-  bool get isLoggedIn => _userId != null; // Added from first snippet
+  String? get userId => _userId; 
+  bool get isLoggedIn => _userId != null; 
 
   int get itemCount {
     int total = 0;
@@ -68,10 +68,10 @@ class CartProvider with ChangeNotifier {
     return total;
   }
 
-  // --- CONSTRUCTOR: Handles Auth State Changes ---
+  
   CartProvider() {
     if (kDebugMode) print('CartProvider initialized');
-    // Awtomatikong nag-fe-fetch o nagli-linis ng cart base sa login state.
+    
     _authSubscription = _auth.authStateChanges().listen((User? user) {
       if (user == null) {
         if (kDebugMode) print('User logged out, clearing local cart.');
@@ -86,9 +86,9 @@ class CartProvider with ChangeNotifier {
     });
   }
 
-  // --- CORE FIRESTORE LOGIC ---
 
-  // Fetches the cart from Firestore
+
+  
   Future<void> _fetchCart() async {
     if (_userId == null) return; 
 
@@ -110,7 +110,7 @@ class CartProvider with ChangeNotifier {
     notifyListeners(); 
   }
 
-  // Saves the current local cart to Firestore
+  
   Future<void> _saveCart() async {
     if (_userId == null) return; 
 
@@ -127,7 +127,7 @@ class CartProvider with ChangeNotifier {
     }
   }
   
-  // --- USER ACTION METHODS ---
+  
 
   void addItem(String id, String name, double price) {
     if (_userId == null) {
@@ -174,7 +174,7 @@ class CartProvider with ChangeNotifier {
       
       if (kDebugMode) print('Order placed successfully for user $_userId');
       
-      // Clear the cart after placing the order
+      
       await clearCart(); 
       
     } catch (e) {
@@ -200,20 +200,19 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // --- LOGOUT FUNCTIONALITY (GUMAGAMIT NG FIREBASE AUTH) ---
+  
   Future<void> signOut() async {
     try {
-      // Tanging ang pagtawag lang sa Firebase Auth signOut() ang kailangan.
-      // Awtomatikong magli-linis ang CartProvider dahil sa _authSubscription.
+      
       await _auth.signOut();
       if (kDebugMode) print("Firebase Auth Sign Out successful.");
     } catch (e) {
       if (kDebugMode) print("Error during Firebase sign out: $e");
-      rethrow; // Re-throw para ma-handle ng UI
+      rethrow;
     }
   }
 
-  // --- DISPOSE METHOD ---
+  
   @override
   void dispose() {
     _authSubscription?.cancel(); 

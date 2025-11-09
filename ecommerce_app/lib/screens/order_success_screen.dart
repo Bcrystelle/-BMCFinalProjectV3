@@ -9,7 +9,7 @@ class OrderSuccessScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Order Placed!'),
-        // 1. This removes the "back" button from the AppBar
+        
         automaticallyImplyLeading: false,
       ),
       body: Center(
@@ -18,7 +18,7 @@ class OrderSuccessScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 2. A nice success icon
+              
               const Icon(
                 Icons.check_circle_outline,
                 color: Colors.green,
@@ -26,7 +26,7 @@ class OrderSuccessScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               
-              // 3. Confirmation text
+              
               const Text(
                 'Thank You!',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
@@ -39,16 +39,16 @@ class OrderSuccessScreen extends StatelessWidget {
               ),
               const SizedBox(height: 30),
 
-              // 4. A button to go back to the home screen
+              
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(50),
                 ),
                 onPressed: () {
-                  // 5. Navigate and clear all other screens
+                  
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    // 6. This (route) => false removes all screens behind it
+                    
                     (Route<dynamic> route) => false,
                   );
                 },

@@ -51,7 +51,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: _passwordController.text.trim(),
       );
 
-      // ⚠️ FIX: Check mounted state after the first await
+      
       if (!mounted) return; 
 
       
@@ -65,7 +65,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         });
       }
 
-      // ⚠️ FIX: Check mounted state after the second await (Firestore set)
+      
       if (!mounted) return;
 
       
@@ -77,14 +77,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       
-      // No need for 'if (mounted)' here since we already checked above
+      
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } on FirebaseAuthException catch (e) {
       
-      // ⚠️ FIX: Check mounted state before using context
+     
       if (!mounted) return;
 
       String message = 'An error occurred. Please try again.';
@@ -101,10 +101,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
     } catch (e) {
       
-      // ⚠️ FIX: Check mounted state before using context
+     
       if (!mounted) return;
 
-      debugPrint('Unexpected error: $e'); // ✅ FIX: Changed 'print' to 'debugPrint'
+      debugPrint('Unexpected error: $e'); 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Something went wrong. Please try again.'),
@@ -113,7 +113,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
     } finally {
       
-      // This is correct: setState is inside an 'if (mounted)' check
+      
       if (mounted) {
         setState(() {
           _isLoading = false;

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:ecommerce_app/screens/admin_order_screen.dart'; // 1. ADD THIS IMPORT
+import 'package:ecommerce_app/screens/admin_order_screen.dart'; 
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -78,29 +78,30 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // Title changed per prompt's comment
+        
         title: const Text('Admin Panel'),
         centerTitle: true,
       ),
-      // 2. We use SingleChildScrollView wrapping the whole body content
+      
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column( // 3. This is the main column containing both the button and the form
+          child: Column( 
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               
-              // 4. --- ADD NEW BUTTON FOR ORDERS ---
+              
               ElevatedButton.icon(
                 icon: const Icon(Icons.list_alt),
                 label: const Text('Manage All Orders'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.indigo, // A different color
+                  backgroundColor: Colors.indigo,
+                  foregroundColor: Colors.white, 
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   textStyle: const TextStyle(fontSize: 16),
                 ),
                 onPressed: () {
-                  // 5. Navigate to our new screen
+                  
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => const AdminOrderScreen(),
@@ -109,23 +110,23 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 },
               ),
               
-              // 6. A divider to separate it
+              
               const Divider(height: 30, thickness: 1),
               
               const Text(
-                'Add New Product', // The new title
+                'Add New Product', 
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
 
-              // 7. The existing 'Add Product' form wrapped in its own Form widget
+              
               Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Product Name
+                    
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(
@@ -137,7 +138,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Description
+                    
                     TextFormField(
                       controller: _descriptionController,
                       decoration: const InputDecoration(
@@ -151,7 +152,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Price
+                    
                     TextFormField(
                       controller: _priceController,
                       decoration: const InputDecoration(
@@ -169,7 +170,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Image URL
+                    
                     TextFormField(
                       controller: _imageUrlController,
                       decoration: const InputDecoration(
@@ -181,7 +182,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Upload Button
+                    
                     _isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : ElevatedButton.icon(

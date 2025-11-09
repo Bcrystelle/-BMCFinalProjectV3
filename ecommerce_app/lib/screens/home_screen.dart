@@ -29,8 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchUserRole() async {
     if (_currentUser == null) return;
 
-    // Inside this block, _currentUser is known to be non-null, 
-    // so we can safely use the property without '!' or '?' (or cast it once).
+
     final userUid = _currentUser.uid;
     
     try {
@@ -64,12 +63,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          // FIX 1 (Line 35): Use null-aware access '?' instead of '!'
+          
           _currentUser != null ? 'Welcome, ${_currentUser.email}' : 'Home',
         ),
         actions: [
           
-          // Existing Cart Icon
+          
           Consumer<CartProvider>(
             builder: (context, cart, child) {
               return Badge(
@@ -89,10 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
-          // New Orders Button
-          // FIX 2 (Line 69 - if this was where the second error was): The logic 
-          // already covers user state, but let's ensure the button is only 
-          // visible if a user is logged in, to match your user-centric logic.
+
           if (_currentUser != null) 
             IconButton(
               icon: const Icon(Icons.receipt_long), 
@@ -105,8 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-          
-          // Admin Panel Button
+
           if (_userRole == 'admin')
             IconButton(
               icon: const Icon(Icons.admin_panel_settings),
@@ -120,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-          // Logout Button
+
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
@@ -129,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      // Product StreamBuilder (Remains the same)
+
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('products')

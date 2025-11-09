@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
       String message = 'An error occurred.';
 
       
-      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}'); // ✅ FIX: Print changed to debugPrint
+      debugPrint('FirebaseAuthException: ${e.code} - ${e.message}'); 
 
       
       switch (e.code) {

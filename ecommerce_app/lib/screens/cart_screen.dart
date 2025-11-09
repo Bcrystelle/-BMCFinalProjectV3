@@ -1,27 +1,27 @@
 import 'package:ecommerce_app/providers/cart_provider.dart';
-import 'package:ecommerce_app/screens/order_success_screen.dart'; // 1. ADDED IMPORT
+import 'package:ecommerce_app/screens/order_success_screen.dart'; 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// 2. Change this to a StatefulWidget
+
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
   @override
-  // 3. Create the State
+  
   State<CartScreen> createState() => _CartScreenState();
 }
 
-// 4. Rename the class to _CartScreenState
+
 class _CartScreenState extends State<CartScreen> {
   
-  // 5. Add our loading state variable
+  
   bool _isLoading = false;
 
-  // 6. Move the build method inside here
+  
   @override
   Widget build(BuildContext context) {
-    // 1. This line is the same
+    
     final cart = Provider.of<CartProvider>(context);
 
     return Scaffold(
@@ -69,7 +69,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
           ),
           
-          // 3. The "Total" Card is the same
+          
           Card(
             margin: const EdgeInsets.all(16),
             child: Padding(
@@ -90,42 +90,42 @@ class _CartScreenState extends State<CartScreen> {
             ),
           ),
           
-          // 4. --- ADDED NEW BUTTON ---
+          
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50), // Wide button
+                minimumSize: const Size.fromHeight(50), 
               ),
               
-              // 5. Disable button if loading OR if cart is empty
+              
               onPressed: (_isLoading || cart.items.isEmpty) ? null : () async {
-                // 6. Start the loading spinner
+                
                 setState(() {
                   _isLoading = true;
                 });
 
                 try {
-                  // 7. Get provider (listen: false is for calling functions)
+                  
                   final cartProvider = Provider.of<CartProvider>(context, listen: false);
                   
-                  // 8. Call our new methods (order first, then clear)
+                  
                   await cartProvider.placeOrder();
                   await cartProvider.clearCart();
                   
-                  // 9. Navigate to success screen and clear the navigation stack
+                  
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const OrderSuccessScreen()),
                     (route) => false,
                   );
 
                 } catch (e) {
-                  // 10. Show error if placeOrder() fails
+                  
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Failed to place order: $e')),
                   );
                 } finally {
-                  // 11. ALWAYS stop the spinner
+                  
                   if (mounted) {
                     setState(() {
                       _isLoading = false;
@@ -134,7 +134,7 @@ class _CartScreenState extends State<CartScreen> {
                 }
               },
               
-              // 12. Show spinner or text based on loading state
+              
               child: _isLoading 
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
