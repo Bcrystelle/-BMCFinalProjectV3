@@ -7,7 +7,6 @@ import 'package:ecommerce_app/screens/product_detail_screen.dart';
 import 'package:ecommerce_app/providers/cart_provider.dart';
 import 'package:ecommerce_app/screens/cart_screen.dart';
 import 'package:provider/provider.dart';
-// 1. ADDED IMPORT for the new screen
 import 'package:ecommerce_app/screens/order_history_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
@@ -19,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _userRole = 'user';
-  // Use a nullable type for _currentUser, but ensure checks where needed
   final User? _currentUser = FirebaseAuth.instance.currentUser;
 
   @override
@@ -31,13 +29,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchUserRole() async {
     if (_currentUser == null) return;
 
-    // Use a non-nullable reference to currentUser within this block
-    final user = _currentUser!;
+    // Inside this block, _currentUser is known to be non-null, 
+    // so we can safely use the property without '!' or '?' (or cast it once).
+    final userUid = _currentUser.uid;
     
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(user.uid) 
+          .doc(userUid) 
           .get();
 
       if (doc.exists && doc.data() != null) {
@@ -65,12 +64,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          // Safely access email using null-aware operator
-          _currentUser != null ? 'Welcome, ${_currentUser!.email}' : 'Home',
+          // FIX 1 (Line 35): Use null-aware access '?' instead of '!'
+          _currentUser != null ? 'Welcome, ${_currentUser.email}' : 'Home',
         ),
         actions: [
           
-          // Cart Icon with Badge (Existing)
+          // Existing Cart Icon
           Consumer<CartProvider>(
             builder: (context, cart, child) {
               return Badge(
@@ -89,21 +88,25 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
-          
-          // 2. --- NEW ORDERS BUTTON ---
-          IconButton(
-            icon: const Icon(Icons.receipt_long), // A "receipt" icon
-            tooltip: 'My Orders',
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const OrderHistoryScreen(),
-                ),
-              );
-            },
-          ),
 
-          // Admin Panel Button (Existing, shown conditionally)
+          // New Orders Button
+          // FIX 2 (Line 69 - if this was where the second error was): The logic 
+          // already covers user state, but let's ensure the button is only 
+          // visible if a user is logged in, to match your user-centric logic.
+          if (_currentUser != null) 
+            IconButton(
+              icon: const Icon(Icons.receipt_long), 
+              tooltip: 'My Orders',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const OrderHistoryScreen(),
+                  ),
+                );
+              },
+            ),
+          
+          // Admin Panel Button
           if (_userRole == 'admin')
             IconButton(
               icon: const Icon(Icons.admin_panel_settings),
@@ -117,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-          // Logout Button (Existing)
+          // Logout Button
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
@@ -126,8 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      
-      // Main Product Grid (Existing StreamBuilder)
+      // Product StreamBuilder (Remains the same)
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('products')
