@@ -56,10 +56,10 @@ class CartProvider with ChangeNotifier {
   // === 3. GETTERS ===
   List<CartItem> get items => List.unmodifiable(_items);
 
-  int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
+  int get itemCount => _items.fold(0, (totalSum, item) => totalSum + item.quantity);
 
   double get totalPrice =>
-      _items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+      _items.fold(0.0, (totalSum, item) => totalSum + (item.price * item.quantity));
 
   // === 4. AUTH STATE CHANGE HANDLER ===
   Future<void> _onAuthStateChanged(User? user) async {
