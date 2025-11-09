@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:ecommerce_app/screens/admin_order_screen.dart'; // 1. ADD THIS IMPORT
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -77,89 +78,124 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // Title changed per prompt's comment
         title: const Text('Admin Panel'),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
+      // 2. We use SingleChildScrollView wrapping the whole body content
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column( // 3. This is the main column containing both the button and the form
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Add a New Product',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-
               
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Product Name',
-                  border: OutlineInputBorder(),
+              // 4. --- ADD NEW BUTTON FOR ORDERS ---
+              ElevatedButton.icon(
+                icon: const Icon(Icons.list_alt),
+                label: const Text('Manage All Orders'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.indigo, // A different color
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: const TextStyle(fontSize: 16),
                 ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter product name' : null,
-              ),
-              const SizedBox(height: 12),
-
-              
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) => value == null || value.isEmpty
-                    ? 'Enter product description'
-                    : null,
-              ),
-              const SizedBox(height: 12),
-
-              
-              TextFormField(
-                controller: _priceController,
-                decoration: const InputDecoration(
-                  labelText: 'Price',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  final price = double.tryParse(value ?? '');
-                  if (price == null || price <= 0) {
-                    return 'Enter a valid price';
-                  }
-                  return null;
+                onPressed: () {
+                  // 5. Navigate to our new screen
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AdminOrderScreen(),
+                    ),
+                  );
                 },
               ),
-              const SizedBox(height: 12),
-
               
-              TextFormField(
-                controller: _imageUrlController,
-                decoration: const InputDecoration(
-                  labelText: 'Image URL',
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) =>
-                    value == null || value.isEmpty ? 'Enter image URL' : null,
+              // 6. A divider to separate it
+              const Divider(height: 30, thickness: 1),
+              
+              const Text(
+                'Add New Product', // The new title
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
-              
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : ElevatedButton.icon(
-                      icon: const Icon(Icons.upload),
-                      label: const Text('Upload Product'),
-                      onPressed: _uploadProduct,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+              // 7. The existing 'Add Product' form wrapped in its own Form widget
+              Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Product Name
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Product Name',
+                        border: OutlineInputBorder(),
                       ),
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Enter product name' : null,
                     ),
+                    const SizedBox(height: 12),
+
+                    // Description
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Enter product description'
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Price
+                    TextFormField(
+                      controller: _priceController,
+                      decoration: const InputDecoration(
+                        labelText: 'Price',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        final price = double.tryParse(value ?? '');
+                        if (price == null || price <= 0) {
+                          return 'Enter a valid price';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Image URL
+                    TextFormField(
+                      controller: _imageUrlController,
+                      decoration: const InputDecoration(
+                        labelText: 'Image URL',
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: (value) =>
+                          value == null || value.isEmpty ? 'Enter image URL' : null,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Upload Button
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : ElevatedButton.icon(
+                            icon: const Icon(Icons.upload),
+                            label: const Text('Upload Product'),
+                            onPressed: _uploadProduct,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blueAccent,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
