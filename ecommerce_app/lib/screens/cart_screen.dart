@@ -24,6 +24,7 @@ class OrderSuccessScreen extends StatelessWidget {
             const SizedBox(height: 40),
             TextButton(
               onPressed: () {
+                // Return to the root of navigation (Home or first route)
                 Navigator.of(context).popUntil((route) => route.isFirst);
               },
               child: const Text('Go back to shopping'),
@@ -49,7 +50,7 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context);
+    final cart = context.watch<CartProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -65,9 +66,14 @@ class _CartScreenState extends State<CartScreen> {
                     itemCount: cart.items.length,
                     itemBuilder: (context, index) {
                       final cartItem = cart.items[index];
+
                       return ListTile(
                         leading: CircleAvatar(
-                          child: Text(cartItem.name[0]),
+                          child: Text(
+                            cartItem.name.isNotEmpty
+                                ? cartItem.name[0]
+                                : '?', // Safe check if string empty
+                          ),
                         ),
                         title: Text(cartItem.name),
                         subtitle: Text('Qty: ${cartItem.quantity}'),
@@ -79,9 +85,9 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                cart.removeItem(cartItem.id);
-                              },
+                              onPressed: () =>
+                                  cart.removeItem(cartItem.id),
+                              tooltip: 'Remove item',
                             ),
                           ],
                         ),
@@ -100,12 +106,17 @@ class _CartScreenState extends State<CartScreen> {
                 children: [
                   const Text(
                     'Total:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   Text(
                     '₱${cart.totalPrice.toStringAsFixed(2)}',
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -117,15 +128,13 @@ class _CartScreenState extends State<CartScreen> {
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50), // Full-width button
+                minimumSize: const Size.fromHeight(50), // Full width button
               ),
               onPressed:
                   (_isLoading || cart.items.isEmpty) ? null : () async {
                 if (!mounted) return;
 
-                setState(() {
-                  _isLoading = true;
-                });
+                setState(() => _isLoading = true);
 
                 try {
                   final cartProvider =
@@ -134,33 +143,37 @@ class _CartScreenState extends State<CartScreen> {
                   await cartProvider.placeOrder();
                   await cartProvider.clearCart();
 
-                  // ✅ Line 127: Check before using Navigator
+                  // ✅ Safe mounted check before navigation
                   if (!mounted) return;
 
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
+                  await Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute<void>(
                       builder: (context) => const OrderSuccessScreen(),
                     ),
                     (route) => false,
                   );
                 } catch (e) {
-                  // ✅ Line 132: Check before using ScaffoldMessenger
                   if (!mounted) return;
-
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to place order: $e')),
+                    SnackBar(
+                      content: Text('Failed to place order: $e'),
+                    ),
                   );
                 } finally {
                   if (mounted) {
-                    setState(() {
-                      _isLoading = false;
-                    });
+                    setState(() => _isLoading = false);
                   }
                 }
               },
               child: _isLoading
-                  ? const CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor:
+                            AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     )
                   : const Text(
                       'PLACE ORDER',
