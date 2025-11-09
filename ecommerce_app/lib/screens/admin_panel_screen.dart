@@ -89,6 +89,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
           child: Column( 
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+<<<<<<< HEAD
               
               
               ElevatedButton.icon(
@@ -117,10 +118,72 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                 'Add New Product', 
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
+=======
+              const Text(
+                'Add a New Product',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+
+              
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Product Name',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Enter product name' : null,
+              ),
+              const SizedBox(height: 12),
+
+              
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                validator: (value) => value == null || value.isEmpty
+                    ? 'Enter product description'
+                    : null,
+              ),
+              const SizedBox(height: 12),
+
+              
+              TextFormField(
+                controller: _priceController,
+                decoration: const InputDecoration(
+                  labelText: 'Price',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  final price = double.tryParse(value ?? '');
+                  if (price == null || price <= 0) {
+                    return 'Enter a valid price';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 12),
+
+              
+              TextFormField(
+                controller: _imageUrlController,
+                decoration: const InputDecoration(
+                  labelText: 'Image URL',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                    value == null || value.isEmpty ? 'Enter image URL' : null,
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
               ),
               const SizedBox(height: 10),
 
               
+<<<<<<< HEAD
               Form(
                 key: _formKey,
                 child: Column(
@@ -132,6 +195,17 @@ class _AdminPanelScreenState extends State<AdminPanelScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Product Name',
                         border: OutlineInputBorder(),
+=======
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton.icon(
+                      icon: const Icon(Icons.upload),
+                      label: const Text('Upload Product'),
+                      onPressed: _uploadProduct,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
                       ),
                       validator: (value) =>
                           value == null || value.isEmpty ? 'Enter product name' : null,

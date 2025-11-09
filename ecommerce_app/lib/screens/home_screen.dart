@@ -29,13 +29,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchUserRole() async {
     if (_currentUser == null) return;
 
+<<<<<<< HEAD
 
     final userUid = _currentUser.uid;
+=======
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
     
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
+<<<<<<< HEAD
           .doc(userUid) 
+=======
+          .doc(_currentUser.uid) 
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
           .get();
 
       if (doc.exists && doc.data() != null) {
@@ -68,7 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           
+<<<<<<< HEAD
           
+=======
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
           Consumer<CartProvider>(
             builder: (context, cart, child) {
               return Badge(
@@ -88,6 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
 
+<<<<<<< HEAD
 
           if (_currentUser != null) 
             IconButton(
@@ -102,6 +113,9 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
+=======
+         
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
           if (_userRole == 'admin')
             IconButton(
               icon: const Icon(Icons.admin_panel_settings),
@@ -115,7 +129,11 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
@@ -124,7 +142,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
+<<<<<<< HEAD
 
+=======
+      
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('products')
@@ -136,16 +158,28 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
+<<<<<<< HEAD
+=======
+          
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
+<<<<<<< HEAD
+=======
+          
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Text('No products found. Add some in the Admin Panel!'),
             );
           }
 
+<<<<<<< HEAD
+=======
+          
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
           final products = snapshot.data!.docs;
 
           return GridView.builder(

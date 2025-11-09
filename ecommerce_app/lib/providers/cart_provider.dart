@@ -146,9 +146,13 @@ class CartProvider with ChangeNotifier {
 
   void removeItem(String id) {
     _items.removeWhere((item) => item.id == id);
+<<<<<<< HEAD
     
     _saveCart(); 
     notifyListeners();
+=======
+    notifyListeners(); 
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
   }
 
   Future<void> placeOrder() async {

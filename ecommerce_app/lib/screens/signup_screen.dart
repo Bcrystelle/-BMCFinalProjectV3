@@ -51,7 +51,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: _passwordController.text.trim(),
       );
 
+<<<<<<< HEAD
       
+=======
+      // ⚠️ FIX: Check mounted state after the first await
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
       if (!mounted) return; 
 
       
@@ -65,7 +69,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
         });
       }
 
+<<<<<<< HEAD
       
+=======
+      // ⚠️ FIX: Check mounted state after the second await (Firestore set)
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
       if (!mounted) return;
 
       
@@ -77,14 +85,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
 
       
+<<<<<<< HEAD
       
+=======
+      // No need for 'if (mounted)' here since we already checked above
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
       Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     } on FirebaseAuthException catch (e) {
       
+<<<<<<< HEAD
      
+=======
+      // ⚠️ FIX: Check mounted state before using context
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
       if (!mounted) return;
 
       String message = 'An error occurred. Please try again.';
@@ -101,10 +117,17 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
     } catch (e) {
       
+<<<<<<< HEAD
      
       if (!mounted) return;
 
       debugPrint('Unexpected error: $e'); 
+=======
+      // ⚠️ FIX: Check mounted state before using context
+      if (!mounted) return;
+
+      debugPrint('Unexpected error: $e'); // ✅ FIX: Changed 'print' to 'debugPrint'
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Something went wrong. Please try again.'),
@@ -113,7 +136,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       );
     } finally {
       
+<<<<<<< HEAD
       
+=======
+      // This is correct: setState is inside an 'if (mounted)' check
+>>>>>>> 696d4c296bf00fdb54be5ad28b6a3d861154c71d
       if (mounted) {
         setState(() {
           _isLoading = false;
