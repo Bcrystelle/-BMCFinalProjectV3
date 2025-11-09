@@ -45,7 +45,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  // Controls loading spinner visibility
   bool _isLoading = false;
 
   @override
@@ -66,7 +65,6 @@ class _CartScreenState extends State<CartScreen> {
                     itemCount: cart.items.length,
                     itemBuilder: (context, index) {
                       final cartItem = cart.items[index];
-
                       return ListTile(
                         leading: CircleAvatar(
                           child: Text(cartItem.name[0]),
@@ -107,9 +105,7 @@ class _CartScreenState extends State<CartScreen> {
                   Text(
                     '₱${cart.totalPrice.toStringAsFixed(2)}',
                     style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                        fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
@@ -121,45 +117,47 @@ class _CartScreenState extends State<CartScreen> {
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50), // Full width button
+                minimumSize: const Size.fromHeight(50), // Full-width button
               ),
-              onPressed: (_isLoading || cart.items.isEmpty)
-                  ? null
-                  : () async {
-                      if (!mounted) return;
+              onPressed:
+                  (_isLoading || cart.items.isEmpty) ? null : () async {
+                if (!mounted) return;
 
-                      setState(() {
-                        _isLoading = true;
-                      });
+                setState(() {
+                  _isLoading = true;
+                });
 
-                      try {
-                        final cartProvider =
-                            Provider.of<CartProvider>(context, listen: false);
+                try {
+                  final cartProvider =
+                      Provider.of<CartProvider>(context, listen: false);
 
-                        await cartProvider.placeOrder();
-                        await cartProvider.clearCart();
+                  await cartProvider.placeOrder();
+                  await cartProvider.clearCart();
 
-                        if (!mounted) return;
+                  // ✅ Line 127: Check before using Navigator
+                  if (!mounted) return;
 
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const OrderSuccessScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      } catch (e) {
-                        if (!mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to place order: $e')),
-                        );
-                      } finally {
-                        if (mounted) {
-                          setState(() {
-                            _isLoading = false;
-                          });
-                        }
-                      }
-                    },
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const OrderSuccessScreen(),
+                    ),
+                    (route) => false,
+                  );
+                } catch (e) {
+                  // ✅ Line 132: Check before using ScaffoldMessenger
+                  if (!mounted) return;
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to place order: $e')),
+                  );
+                } finally {
+                  if (mounted) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                  }
+                }
+              },
               child: _isLoading
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
