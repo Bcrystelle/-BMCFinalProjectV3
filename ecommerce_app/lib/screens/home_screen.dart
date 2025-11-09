@@ -7,6 +7,8 @@ import 'package:ecommerce_app/screens/product_detail_screen.dart';
 import 'package:ecommerce_app/providers/cart_provider.dart';
 import 'package:ecommerce_app/screens/cart_screen.dart';
 import 'package:provider/provider.dart';
+// 1. ADDED IMPORT for the new screen
+import 'package:ecommerce_app/screens/order_history_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _userRole = 'user';
+  // Use a nullable type for _currentUser, but ensure checks where needed
   final User? _currentUser = FirebaseAuth.instance.currentUser;
 
   @override
@@ -28,11 +31,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchUserRole() async {
     if (_currentUser == null) return;
 
+    // Use a non-nullable reference to currentUser within this block
+    final user = _currentUser!;
     
     try {
       final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(_currentUser.uid) 
+          .doc(user.uid) 
           .get();
 
       if (doc.exists && doc.data() != null) {
@@ -60,11 +65,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          
-          _currentUser != null ? 'Welcome, ${_currentUser.email}' : 'Home',
+          // Safely access email using null-aware operator
+          _currentUser != null ? 'Welcome, ${_currentUser!.email}' : 'Home',
         ),
         actions: [
           
+          // Cart Icon with Badge (Existing)
           Consumer<CartProvider>(
             builder: (context, cart, child) {
               return Badge(
@@ -83,8 +89,21 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           ),
+          
+          // 2. --- NEW ORDERS BUTTON ---
+          IconButton(
+            icon: const Icon(Icons.receipt_long), // A "receipt" icon
+            tooltip: 'My Orders',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const OrderHistoryScreen(),
+                ),
+              );
+            },
+          ),
 
-         
+          // Admin Panel Button (Existing, shown conditionally)
           if (_userRole == 'admin')
             IconButton(
               icon: const Icon(Icons.admin_panel_settings),
@@ -98,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
 
-          
+          // Logout Button (Existing)
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Logout',
@@ -108,6 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
 
       
+      // Main Product Grid (Existing StreamBuilder)
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('products')
@@ -119,19 +139,16 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(child: CircularProgressIndicator());
           }
 
-          
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return const Center(
               child: Text('No products found. Add some in the Admin Panel!'),
             );
           }
 
-          
           final products = snapshot.data!.docs;
 
           return GridView.builder(
