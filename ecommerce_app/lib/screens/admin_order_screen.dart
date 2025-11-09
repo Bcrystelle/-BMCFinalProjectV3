@@ -1,5 +1,3 @@
-// lib/screens/admin_order_screen.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // We'll use this for dates again
@@ -23,7 +21,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
         'status': newStatus,
       });
       // Use mounted check before showing SnackBar in async function
-      if (!mounted) return; 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Order status updated!')),
       );
@@ -78,6 +76,9 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Manage Orders'),
+        // 🌟 CORRECTION: AppBar styling properties go here (not styleFrom/onPressed)
+        backgroundColor: Colors.indigo, 
+        foregroundColor: Colors.white, // Sets the color for the title and icons to white
       ),
       // 1. Use a StreamBuilder to get all orders in real-time
       body: StreamBuilder<QuerySnapshot>(
