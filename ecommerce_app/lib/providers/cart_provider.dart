@@ -1,7 +1,7 @@
-import 'dart:async'; // 1. ADDED
+import 'dart:async'; 
 import 'package:flutter/foundation.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // 2. ADDED
-import 'package:cloud_firestore/cloud_firestore.dart'; // 3. ADDED
+import 'package:firebase_auth/firebase_auth.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 
 class CartItem {
   final String id;
@@ -16,7 +16,7 @@ class CartItem {
     this.quantity = 1,
   });
 
-  // 1. ADDED: Converts CartItem to a Map for Firestore
+  // Converts CartItem to a Map for Firestore
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -26,9 +26,8 @@ class CartItem {
     };
   }
 
-  // 2. ADDED: Creates a CartItem from a Map retrieved from Firestore
+  // Creates a CartItem from a Map retrieved from Firestore
   factory CartItem.fromJson(Map<String, dynamic> json) {
-    // Note: Firestore stores numbers as 'num' (int or double), so we convert price to double and quantity to int.
     return CartItem(
       id: json['id'] as String,
       name: json['name'] as String,
@@ -41,14 +40,10 @@ class CartItem {
 }
 
 class CartProvider with ChangeNotifier {
-  // 4. CHANGED: _items is no longer final
   List<CartItem> _items = [];
+  String? _userId; 
+  StreamSubscription? _authSubscription; 
 
-  // 5. ADDED: New properties for auth and database
-  String? _userId; // Will hold the current user's ID
-  StreamSubscription? _authSubscription; // To listen to auth changes
-
-  // 6. ADDED: Get Firebase instances
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -71,64 +66,53 @@ class CartProvider with ChangeNotifier {
     return total;
   }
 
-  // 7. ADDED CONSTRUCTOR
+  // CONSTRUCTOR
   CartProvider() {
     print('CartProvider initialized');
-    // Listen to authentication changes
     _authSubscription = _auth.authStateChanges().listen((User? user) {
       if (user == null) {
-        // User is logged out
         print('User logged out, clearing cart.');
         _userId = null;
-        _items = []; // Clear local cart
+        _items = []; 
       } else {
-        // User is logged in
         print('User logged in: ${user.uid}. Fetching cart...');
         _userId = user.uid;
-        _fetchCart(); // Load their cart from Firestore
+        _fetchCart(); 
       }
-      // Notify listeners to update UI (e.g., clear cart badge on logout)
       notifyListeners();
     });
   }
 
-  // 8. ADDED: Fetches the cart from Firestore
+  // Fetches the cart from Firestore
   Future<void> _fetchCart() async {
-    if (_userId == null) return; // Not logged in, nothing to fetch
+    if (_userId == null) return; 
 
     try {
-      // 1. Get the user's specific cart document
       final doc = await _firestore.collection('userCarts').doc(_userId).get();
       
       if (doc.exists && doc.data()!['cartItems'] != null) {
-        // 2. Get the list of items from the document
         final List<dynamic> cartData = doc.data()!['cartItems'];
-        
-        // 3. Convert that list of Maps into our List<CartItem>
         _items = cartData.map((item) => CartItem.fromJson(item)).toList();
         print('Cart fetched successfully: ${_items.length} items');
       } else {
-        // 4. The user has no saved cart, start with an empty one
         _items = [];
         print('No saved cart found. Starting empty.');
       }
     } catch (e) {
       print('Error fetching cart: $e');
-      _items = []; // On error, default to an empty cart
+      _items = []; 
     }
-    notifyListeners(); // Update the UI
+    notifyListeners(); 
   }
 
-  // 9. ADDED: Saves the current local cart to Firestore
+  // Saves the current local cart to Firestore
   Future<void> _saveCart() async {
-    if (_userId == null) return; // Not logged in, nowhere to save
+    if (_userId == null) return; 
 
     try {
-      // 1. Convert our List<CartItem> into a List<Map>
       final List<Map<String, dynamic>> cartData = 
           _items.map((item) => item.toJson()).toList();
       
-      // 2. Find the user's document and set the 'cartItems' field
       await _firestore.collection('userCarts').doc(_userId).set({
         'cartItems': cartData,
       });
@@ -147,21 +131,81 @@ class CartProvider with ChangeNotifier {
       _items.add(CartItem(id: id, name: name, price: price));
     }
 
-    _saveCart(); // 10. ADDED LINE: Persist the change
+    _saveCart(); 
     notifyListeners();
   }
 
   void removeItem(String id) {
     _items.removeWhere((item) => item.id == id);
     
-    _saveCart(); // 11. ADDED LINE: Persist the change
+    _saveCart(); 
     notifyListeners();
   }
 
-  // 12. ADDED dispose() Method
+  // 1. ADDED: Creates an order in the 'orders' collection
+  Future<void> placeOrder() async {
+    // 2. Check if we have a user and items
+    if (_userId == null || _items.isEmpty) {
+      throw Exception('Cart is empty or user is not logged in.');
+    }
+
+    try {
+      // 3. Convert our List<CartItem> to a List<Map> using toJson()
+      final List<Map<String, dynamic>> cartData = 
+          _items.map((item) => item.toJson()).toList();
+      
+      // 4. Get total price and item count from our getters
+      final double total = totalPrice;
+      final int count = itemCount;
+
+      // 5. Create a new document in the 'orders' collection
+      await _firestore.collection('orders').add({
+        'userId': _userId,
+        'items': cartData, // Our list of item maps
+        'totalPrice': total,
+        'itemCount': count,
+        'status': 'Pending', // 6. IMPORTANT: For admin verification
+        'createdAt': FieldValue.serverTimestamp(), // For sorting
+      });
+      
+      print('Order placed successfully for user $_userId');
+      
+      // Note: We DO NOT clear the cart here. clearCart() is called separately.
+      
+    } catch (e) {
+      print('Error placing order: $e');
+      // 8. Re-throw the error so the UI can catch it
+      // The `e` might not be dynamic, so we cast it slightly safer
+      rethrow; 
+    }
+  }
+
+  // 9. ADDED: Clears the cart locally AND in Firestore
+  Future<void> clearCart() async {
+    // 10. Clear the local list
+    _items = [];
+    
+    // 11. If logged in, clear the Firestore cart as well
+    if (_userId != null) {
+      try {
+        // 12. Set the 'cartItems' field in their cart doc to an empty list
+        await _firestore.collection('userCarts').doc(_userId).set({
+          'cartItems': [],
+        });
+        print('Firestore cart cleared.');
+      } catch (e) {
+        print('Error clearing Firestore cart: $e');
+      }
+    }
+    
+    // 13. Notify all listeners (this will clear the UI)
+    notifyListeners();
+  }
+
+  // dispose() Method
   @override
   void dispose() {
-    _authSubscription?.cancel(); // Cancel the auth listener to prevent memory leaks
+    _authSubscription?.cancel(); 
     super.dispose();
   }
 }
