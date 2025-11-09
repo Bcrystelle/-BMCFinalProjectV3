@@ -1,4 +1,4 @@
-import 'package:ecommerce_app/screens/home_screen.dart';
+import 'package:ecommerce_app/screens/home_screen.dart'; // Siguraduhin na tama ang path na ito
 import 'package:flutter/material.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
@@ -9,7 +9,8 @@ class OrderSuccessScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Order Placed!'),
-        automaticallyImplyLeading: false, // Removes the back button
+        // Ang pag-set nito sa false ay nagtatanggal ng default back arrow.
+        automaticallyImplyLeading: false, 
       ),
       body: const Padding(
         padding: EdgeInsets.all(32.0),
@@ -58,7 +59,7 @@ class _OrderSuccessBody extends StatelessWidget {
           ),
           const SizedBox(height: 50),
 
-          // ✅ Continue Shopping Button
+          // ✅ Continue Shopping Button - Ito ang nagdadala sa Home Screen at naglilinis ng Stack
           _ContinueShoppingButton(),
         ],
       ),
@@ -81,10 +82,11 @@ class _ContinueShoppingButton extends StatelessWidget {
         ),
       ),
       onPressed: () {
-        // Navigate to Home and clear the previous screens
+        // Dito ang magic: tinatanggal nito ang lahat ng screens sa likod (Checkout, Cart, etc.) 
+        // at ipinapakita lang ang HomeScreen.
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (Route<dynamic> route) => false,
+          (Route<dynamic> route) => false, // Ang 'false' ay nangangahulugang tanggalin lahat ng routes sa likod
         );
       },
       child: const Text(
