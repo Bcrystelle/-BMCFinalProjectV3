@@ -2,7 +2,7 @@ import 'package:ecommerce_app/providers/cart_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-// ✅ Placeholder: Order Success Screen
+// ✅ ORDER SUCCESS SCREEN
 class OrderSuccessScreen extends StatelessWidget {
   const OrderSuccessScreen({super.key});
 
@@ -35,7 +35,8 @@ class OrderSuccessScreen extends StatelessWidget {
   }
 }
 
-// ✅ Cart Screen
+// --------------------------------------------------
+// ✅ CART SCREEN
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
 
@@ -49,7 +50,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Access the CartProvider instance
     final cart = Provider.of<CartProvider>(context);
 
     return Scaffold(
@@ -66,6 +66,7 @@ class _CartScreenState extends State<CartScreen> {
                     itemCount: cart.items.length,
                     itemBuilder: (context, index) {
                       final cartItem = cart.items[index];
+
                       return ListTile(
                         leading: CircleAvatar(
                           child: Text(cartItem.name[0]),
@@ -106,7 +107,9 @@ class _CartScreenState extends State<CartScreen> {
                   Text(
                     '₱${cart.totalPrice.toStringAsFixed(2)}',
                     style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -118,42 +121,45 @@ class _CartScreenState extends State<CartScreen> {
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50), // Full-width button
+                minimumSize: const Size.fromHeight(50), // Full width button
               ),
-              onPressed:
-                  (_isLoading || cart.items.isEmpty) ? null : () async {
-                setState(() {
-                  _isLoading = true;
-                });
+              onPressed: (_isLoading || cart.items.isEmpty)
+                  ? null
+                  : () async {
+                      if (!mounted) return;
 
-                try {
-                  final cartProvider =
-                      Provider.of<CartProvider>(context, listen: false);
+                      setState(() {
+                        _isLoading = true;
+                      });
 
-                  await cartProvider.placeOrder();
-                  await cartProvider.clearCart();
+                      try {
+                        final cartProvider =
+                            Provider.of<CartProvider>(context, listen: false);
 
-                  if (!mounted) return;
+                        await cartProvider.placeOrder();
+                        await cartProvider.clearCart();
 
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const OrderSuccessScreen(),
-                    ),
-                    (route) => false,
-                  );
-                } catch (e) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to place order: $e')),
-                  );
-                } finally {
-                  if (mounted) {
-                    setState(() {
-                      _isLoading = false;
-                    });
-                  }
-                }
-              },
+                        if (!mounted) return;
+
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) => const OrderSuccessScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      } catch (e) {
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to place order: $e')),
+                        );
+                      } finally {
+                        if (mounted) {
+                          setState(() {
+                            _isLoading = false;
+                          });
+                        }
+                      }
+                    },
               child: _isLoading
                   ? const CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -164,6 +170,7 @@ class _CartScreenState extends State<CartScreen> {
                     ),
             ),
           ),
+
           const SizedBox(height: 20),
         ],
       ),
