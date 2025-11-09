@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:ecommerce_app/screens/home_screen.dart'; // Siguraduhin na tama ang path
+import 'package:ecommerce_app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
@@ -15,14 +15,22 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
     super.initState();
 
     // ✅ Auto-redirect to HomeScreen after 3 seconds
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      }
-    });
+    Timer(const Duration(seconds: 3), _navigateToHome);
+  }
+  
+  // New method for cleaner navigation logic
+  void _navigateToHome() {
+    if (mounted) {
+      // 🚀 SOLUSYON: Gagamitin ang pushAndRemoveUntil
+      // upang tiyaking ang HomeScreen ang magiging tanging screen 
+      // sa navigation stack pagkatapos ng order.
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        // Tanggalin ang lahat ng dating routes (tulad ng CartScreen, ProductDetail, etc.)
+        (Route<dynamic> route) => false, 
+      );
+    }
   }
 
   @override
@@ -30,8 +38,9 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Order Placed!'),
-        // ✅ May back arrow
-        automaticallyImplyLeading: true,
+        // ✅ Aalisin natin ang back arrow
+        // para hindi na pwedeng balikan ang CartScreen at maiwasan ang issues.
+        automaticallyImplyLeading: false, 
       ),
       body: const Padding(
         padding: EdgeInsets.all(32.0),
@@ -81,7 +90,7 @@ class _OrderSuccessBody extends StatelessWidget {
           const SizedBox(height: 50),
 
           // ✅ Manual Continue Button (optional)
-          _ContinueShoppingButton(),
+          const _ContinueShoppingButton(),
           const SizedBox(height: 10),
 
           // ✅ Info about auto redirect
@@ -112,9 +121,11 @@ class _ContinueShoppingButton extends StatelessWidget {
       ),
       onPressed: () {
         // ✅ Manual navigation back to Home
-        Navigator.pushReplacement(
+        // 🚀 SOLUSYON: Ginamit din ang pushAndRemoveUntil dito
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (Route<dynamic> route) => false,
         );
       },
       child: const Text(
