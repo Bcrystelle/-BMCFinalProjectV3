@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:ecommerce_app/screens/home_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:ecommerce_app/screens/home_screen.dart';
 
 class OrderSuccessScreen extends StatefulWidget {
   const OrderSuccessScreen({super.key});
@@ -17,20 +17,17 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
     // ✅ Auto-redirect to HomeScreen after 3 seconds
     Timer(const Duration(seconds: 3), _navigateToHome);
   }
-  
-  // New method for cleaner navigation logic
+
+  /// ✅ Separate method for navigation logic
   void _navigateToHome() {
-    if (mounted) {
-      // 🚀 SOLUSYON: Gagamitin ang pushAndRemoveUntil
-      // upang tiyaking ang HomeScreen ang magiging tanging screen 
-      // sa navigation stack pagkatapos ng order.
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-        // Tanggalin ang lahat ng dating routes (tulad ng CartScreen, ProductDetail, etc.)
-        (Route<dynamic> route) => false, 
-      );
-    }
+    if (!mounted) return;
+
+    // Replace current route stack with HomeScreen
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+      (Route<dynamic> route) => false,
+    );
   }
 
   @override
@@ -38,9 +35,8 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Order Placed!'),
-        // ✅ Aalisin natin ang back arrow
-        // para hindi na pwedeng balikan ang CartScreen at maiwasan ang issues.
-        automaticallyImplyLeading: false, 
+        // ❌ Remove back arrow (user cannot return to cart or checkout)
+        automaticallyImplyLeading: false,
       ),
       body: const Padding(
         padding: EdgeInsets.all(32.0),
@@ -59,17 +55,14 @@ class _OrderSuccessBody extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ✅ Success Icon
-          const Icon(
+        children: const [
+          Icon(
             Icons.check_circle_outline,
             color: Colors.green,
             size: 120,
           ),
-          const SizedBox(height: 30),
-
-          // ✅ Title
-          const Text(
+          SizedBox(height: 30),
+          Text(
             'Thank You for Your Order!',
             style: TextStyle(
               fontSize: 24,
@@ -78,23 +71,17 @@ class _OrderSuccessBody extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 15),
-
-          // ✅ Description
-          const Text(
+          SizedBox(height: 15),
+          Text(
             'Your order has been placed successfully and will be processed shortly.\n'
             'Check your email for confirmation.',
             style: TextStyle(fontSize: 16),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 50),
-
-          // ✅ Manual Continue Button (optional)
-          const _ContinueShoppingButton(),
-          const SizedBox(height: 10),
-
-          // ✅ Info about auto redirect
-          const Text(
+          SizedBox(height: 50),
+          _ContinueShoppingButton(),
+          SizedBox(height: 10),
+          Text(
             'Redirecting to Home in 3 seconds...',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey),
@@ -120,8 +107,7 @@ class _ContinueShoppingButton extends StatelessWidget {
         ),
       ),
       onPressed: () {
-        // ✅ Manual navigation back to Home
-        // 🚀 SOLUSYON: Ginamit din ang pushAndRemoveUntil dito
+        // ✅ Manual navigation to HomeScreen
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
