@@ -91,7 +91,7 @@ class CartProvider with ChangeNotifier {
         debugPrint('✅ Cart fetched: ${_items.length} items.');
       } else {
         _items = [];
-        debugPrint(' No saved cart found. Starting with empty cart.');
+        debugPrint('🆕 No saved cart found. Starting with empty cart.');
       }
     } catch (e) {
       debugPrint('❌ Error fetching cart: $e');
