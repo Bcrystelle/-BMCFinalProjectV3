@@ -1,8 +1,29 @@
-import 'package:ecommerce_app/screens/home_screen.dart'; // Siguraduhin na tama ang path na ito
+import 'dart:async';
+import 'package:ecommerce_app/screens/home_screen.dart'; // Siguraduhin na tama ang path
 import 'package:flutter/material.dart';
 
-class OrderSuccessScreen extends StatelessWidget {
+class OrderSuccessScreen extends StatefulWidget {
   const OrderSuccessScreen({super.key});
+
+  @override
+  State<OrderSuccessScreen> createState() => _OrderSuccessScreenState();
+}
+
+class _OrderSuccessScreenState extends State<OrderSuccessScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ Auto-redirect to HomeScreen after 3 seconds
+    Timer(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,15 +73,23 @@ class _OrderSuccessBody extends StatelessWidget {
 
           // ✅ Description
           const Text(
-            'Your order has been placed successfully and will be processed shortly. '
+            'Your order has been placed successfully and will be processed shortly.\n'
             'Check your email for confirmation.',
             style: TextStyle(fontSize: 16),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 50),
 
-          // ✅ Continue Shopping Button
+          // ✅ Manual Continue Button (optional)
           _ContinueShoppingButton(),
+          const SizedBox(height: 10),
+
+          // ✅ Info about auto redirect
+          const Text(
+            'Redirecting to Home in 3 seconds...',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.grey),
+          ),
         ],
       ),
     );
@@ -82,8 +111,8 @@ class _ContinueShoppingButton extends StatelessWidget {
         ),
       ),
       onPressed: () {
-        // ✅ Pupunta sa HomeScreen pero hindi binubura ang ibang routes
-        Navigator.push(
+        // ✅ Manual navigation back to Home
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
