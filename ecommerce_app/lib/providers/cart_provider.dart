@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart'; 
 
+// --- 1. CART ITEM MODEL ---
 class CartItem {
   final String id;
   final String name;
@@ -31,14 +32,13 @@ class CartItem {
     return CartItem(
       id: json['id'] as String,
       name: json['name'] as String,
-      // Firebase/Dart type safety: ensure 'price' is read as a double
       price: (json['price'] as num).toDouble(), 
-      // Firebase/Dart type safety: ensure 'quantity' is read as an int
       quantity: (json['quantity'] as num).toInt(),
     );
   }
 }
 
+// --- 2. CART PROVIDER ---
 class CartProvider with ChangeNotifier {
   List<CartItem> _items = [];
   String? _userId; 
@@ -47,9 +47,11 @@ class CartProvider with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Getters (Unchanged)
+  // --- Getters ---
   List<CartItem> get items => _items;
-  
+  String? get userId => _userId; // Added from first snippet
+  bool get isLoggedIn => _userId != null; // Added from first snippet
+
   int get itemCount {
     int total = 0;
     for (var item in _items) {
@@ -66,22 +68,25 @@ class CartProvider with ChangeNotifier {
     return total;
   }
 
-  // CONSTRUCTOR
+  // --- CONSTRUCTOR: Handles Auth State Changes ---
   CartProvider() {
-    print('CartProvider initialized');
+    if (kDebugMode) print('CartProvider initialized');
+    // Awtomatikong nag-fe-fetch o nagli-linis ng cart base sa login state.
     _authSubscription = _auth.authStateChanges().listen((User? user) {
       if (user == null) {
-        print('User logged out, clearing cart.');
+        if (kDebugMode) print('User logged out, clearing local cart.');
         _userId = null;
         _items = []; 
       } else {
-        print('User logged in: ${user.uid}. Fetching cart...');
+        if (kDebugMode) print('User logged in: ${user.uid}. Fetching cart...');
         _userId = user.uid;
         _fetchCart(); 
       }
       notifyListeners();
     });
   }
+
+  // --- CORE FIRESTORE LOGIC ---
 
   // Fetches the cart from Firestore
   Future<void> _fetchCart() async {
@@ -93,13 +98,13 @@ class CartProvider with ChangeNotifier {
       if (doc.exists && doc.data()!['cartItems'] != null) {
         final List<dynamic> cartData = doc.data()!['cartItems'];
         _items = cartData.map((item) => CartItem.fromJson(item)).toList();
-        print('Cart fetched successfully: ${_items.length} items');
+        if (kDebugMode) print('Cart fetched successfully: ${_items.length} items');
       } else {
         _items = [];
-        print('No saved cart found. Starting empty.');
+        if (kDebugMode) print('No saved cart found. Starting empty.');
       }
     } catch (e) {
-      print('Error fetching cart: $e');
+      if (kDebugMode) print('Error fetching cart: $e');
       _items = []; 
     }
     notifyListeners(); 
@@ -116,14 +121,18 @@ class CartProvider with ChangeNotifier {
       await _firestore.collection('userCarts').doc(_userId).set({
         'cartItems': cartData,
       });
-      print('Cart saved to Firestore');
+      if (kDebugMode) print('Cart saved to Firestore');
     } catch (e) {
-      print('Error saving cart: $e');
+      if (kDebugMode) print('Error saving cart: $e');
     }
   }
   
-  // Updated Methods
+  // --- USER ACTION METHODS ---
+
   void addItem(String id, String name, double price) {
+    if (_userId == null) {
+      throw Exception("User not logged in. Cannot add item to cart.");
+    }
     var index = _items.indexWhere((item) => item.id == id);
     if (index != -1) {
       _items[index].quantity++;
@@ -142,67 +151,69 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // 1. ADDED: Creates an order in the 'orders' collection
   Future<void> placeOrder() async {
-    // 2. Check if we have a user and items
     if (_userId == null || _items.isEmpty) {
       throw Exception('Cart is empty or user is not logged in.');
     }
 
     try {
-      // 3. Convert our List<CartItem> to a List<Map> using toJson()
       final List<Map<String, dynamic>> cartData = 
           _items.map((item) => item.toJson()).toList();
       
-      // 4. Get total price and item count from our getters
       final double total = totalPrice;
       final int count = itemCount;
 
-      // 5. Create a new document in the 'orders' collection
       await _firestore.collection('orders').add({
         'userId': _userId,
-        'items': cartData, // Our list of item maps
+        'items': cartData, 
         'totalPrice': total,
         'itemCount': count,
-        'status': 'Pending', // 6. IMPORTANT: For admin verification
-        'createdAt': FieldValue.serverTimestamp(), // For sorting
+        'status': 'Pending', 
+        'createdAt': FieldValue.serverTimestamp(), 
       });
       
-      print('Order placed successfully for user $_userId');
+      if (kDebugMode) print('Order placed successfully for user $_userId');
       
-      // Note: We DO NOT clear the cart here. clearCart() is called separately.
+      // Clear the cart after placing the order
+      await clearCart(); 
       
     } catch (e) {
-      print('Error placing order: $e');
-      // 8. Re-throw the error so the UI can catch it
-      // The `e` might not be dynamic, so we cast it slightly safer
+      if (kDebugMode) print('Error placing order: $e');
       rethrow; 
     }
   }
 
-  // 9. ADDED: Clears the cart locally AND in Firestore
   Future<void> clearCart() async {
-    // 10. Clear the local list
     _items = [];
     
-    // 11. If logged in, clear the Firestore cart as well
     if (_userId != null) {
       try {
-        // 12. Set the 'cartItems' field in their cart doc to an empty list
         await _firestore.collection('userCarts').doc(_userId).set({
           'cartItems': [],
         });
-        print('Firestore cart cleared.');
+        if (kDebugMode) print('Firestore cart cleared.');
       } catch (e) {
-        print('Error clearing Firestore cart: $e');
+        if (kDebugMode) print('Error clearing Firestore cart: $e');
       }
     }
     
-    // 13. Notify all listeners (this will clear the UI)
     notifyListeners();
   }
 
-  // dispose() Method
+  // --- LOGOUT FUNCTIONALITY (GUMAGAMIT NG FIREBASE AUTH) ---
+  Future<void> signOut() async {
+    try {
+      // Tanging ang pagtawag lang sa Firebase Auth signOut() ang kailangan.
+      // Awtomatikong magli-linis ang CartProvider dahil sa _authSubscription.
+      await _auth.signOut();
+      if (kDebugMode) print("Firebase Auth Sign Out successful.");
+    } catch (e) {
+      if (kDebugMode) print("Error during Firebase sign out: $e");
+      rethrow; // Re-throw para ma-handle ng UI
+    }
+  }
+
+  // --- DISPOSE METHOD ---
   @override
   void dispose() {
     _authSubscription?.cancel(); 
