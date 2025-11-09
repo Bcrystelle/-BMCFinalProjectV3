@@ -9,8 +9,8 @@ class OrderSuccessScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Order Placed!'),
-        // Ang pag-set nito sa false ay nagtatanggal ng default back arrow.
-        automaticallyImplyLeading: false, 
+        // ✅ May back arrow
+        automaticallyImplyLeading: true,
       ),
       body: const Padding(
         padding: EdgeInsets.all(32.0),
@@ -59,7 +59,7 @@ class _OrderSuccessBody extends StatelessWidget {
           ),
           const SizedBox(height: 50),
 
-          // ✅ Continue Shopping Button - Ito ang nagdadala sa Home Screen at naglilinis ng Stack
+          // ✅ Continue Shopping Button
           _ContinueShoppingButton(),
         ],
       ),
@@ -82,11 +82,10 @@ class _ContinueShoppingButton extends StatelessWidget {
         ),
       ),
       onPressed: () {
-        // Dito ang magic: tinatanggal nito ang lahat ng screens sa likod (Checkout, Cart, etc.) 
-        // at ipinapakita lang ang HomeScreen.
-        Navigator.of(context).pushAndRemoveUntil(
+        // ✅ Pupunta sa HomeScreen pero hindi binubura ang ibang routes
+        Navigator.push(
+          context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (Route<dynamic> route) => false, // Ang 'false' ay nangangahulugang tanggalin lahat ng routes sa likod
         );
       },
       child: const Text(
